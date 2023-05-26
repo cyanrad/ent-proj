@@ -8,6 +8,7 @@ import (
 	"errors"
 	"main/ent"
 
+	"entgo.io/contrib/entgql"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
 	gqlparser "github.com/vektah/gqlparser/v2"
@@ -38,8 +39,32 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	Coffee struct {
+		Coffee       func(childComplexity int) int
+		CoffeeMate   func(childComplexity int) int
+		ID           func(childComplexity int) int
+		Milk         func(childComplexity int) int
+		PowderedMilk func(childComplexity int) int
+		Rating       func(childComplexity int) int
+		Sugar        func(childComplexity int) int
+		Water        func(childComplexity int) int
+	}
+
+	CoffeeConnection struct {
+		Edges      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	CoffeeEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
 	Mutation struct {
-		CreateTodo func(childComplexity int, input ent.CreateTodoInput) int
+		CreateCoffee func(childComplexity int, input ent.CreateCoffeeInput) int
+		DeleteCoffee func(childComplexity int, id int) int
+		UpdateCoffee func(childComplexity int, id int, input ent.UpdateCoffeeInput) int
 	}
 
 	PageInfo struct {
@@ -50,19 +75,9 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Node  func(childComplexity int, id int) int
-		Nodes func(childComplexity int, ids []int) int
-		Todos func(childComplexity int) int
-	}
-
-	Todo struct {
-		Children  func(childComplexity int) int
-		CreatedAt func(childComplexity int) int
-		ID        func(childComplexity int) int
-		Parent    func(childComplexity int) int
-		Priority  func(childComplexity int) int
-		Status    func(childComplexity int) int
-		Text      func(childComplexity int) int
+		Coffees func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int) int
+		Node    func(childComplexity int, id int) int
+		Nodes   func(childComplexity int, ids []int) int
 	}
 }
 
@@ -81,17 +96,132 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
-	case "Mutation.createTodo":
-		if e.complexity.Mutation.CreateTodo == nil {
+	case "Coffee.coffee":
+		if e.complexity.Coffee.Coffee == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_createTodo_args(context.TODO(), rawArgs)
+		return e.complexity.Coffee.Coffee(childComplexity), true
+
+	case "Coffee.coffeeMate":
+		if e.complexity.Coffee.CoffeeMate == nil {
+			break
+		}
+
+		return e.complexity.Coffee.CoffeeMate(childComplexity), true
+
+	case "Coffee.id":
+		if e.complexity.Coffee.ID == nil {
+			break
+		}
+
+		return e.complexity.Coffee.ID(childComplexity), true
+
+	case "Coffee.milk":
+		if e.complexity.Coffee.Milk == nil {
+			break
+		}
+
+		return e.complexity.Coffee.Milk(childComplexity), true
+
+	case "Coffee.powderedMilk":
+		if e.complexity.Coffee.PowderedMilk == nil {
+			break
+		}
+
+		return e.complexity.Coffee.PowderedMilk(childComplexity), true
+
+	case "Coffee.rating":
+		if e.complexity.Coffee.Rating == nil {
+			break
+		}
+
+		return e.complexity.Coffee.Rating(childComplexity), true
+
+	case "Coffee.sugar":
+		if e.complexity.Coffee.Sugar == nil {
+			break
+		}
+
+		return e.complexity.Coffee.Sugar(childComplexity), true
+
+	case "Coffee.water":
+		if e.complexity.Coffee.Water == nil {
+			break
+		}
+
+		return e.complexity.Coffee.Water(childComplexity), true
+
+	case "CoffeeConnection.edges":
+		if e.complexity.CoffeeConnection.Edges == nil {
+			break
+		}
+
+		return e.complexity.CoffeeConnection.Edges(childComplexity), true
+
+	case "CoffeeConnection.pageInfo":
+		if e.complexity.CoffeeConnection.PageInfo == nil {
+			break
+		}
+
+		return e.complexity.CoffeeConnection.PageInfo(childComplexity), true
+
+	case "CoffeeConnection.totalCount":
+		if e.complexity.CoffeeConnection.TotalCount == nil {
+			break
+		}
+
+		return e.complexity.CoffeeConnection.TotalCount(childComplexity), true
+
+	case "CoffeeEdge.cursor":
+		if e.complexity.CoffeeEdge.Cursor == nil {
+			break
+		}
+
+		return e.complexity.CoffeeEdge.Cursor(childComplexity), true
+
+	case "CoffeeEdge.node":
+		if e.complexity.CoffeeEdge.Node == nil {
+			break
+		}
+
+		return e.complexity.CoffeeEdge.Node(childComplexity), true
+
+	case "Mutation.createCoffee":
+		if e.complexity.Mutation.CreateCoffee == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createCoffee_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateTodo(childComplexity, args["input"].(ent.CreateTodoInput)), true
+		return e.complexity.Mutation.CreateCoffee(childComplexity, args["input"].(ent.CreateCoffeeInput)), true
+
+	case "Mutation.deleteCoffee":
+		if e.complexity.Mutation.DeleteCoffee == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteCoffee_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteCoffee(childComplexity, args["id"].(int)), true
+
+	case "Mutation.updateCoffee":
+		if e.complexity.Mutation.UpdateCoffee == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateCoffee_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateCoffee(childComplexity, args["id"].(int), args["input"].(ent.UpdateCoffeeInput)), true
 
 	case "PageInfo.endCursor":
 		if e.complexity.PageInfo.EndCursor == nil {
@@ -121,6 +251,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PageInfo.StartCursor(childComplexity), true
 
+	case "Query.coffees":
+		if e.complexity.Query.Coffees == nil {
+			break
+		}
+
+		args, err := ec.field_Query_coffees_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Coffees(childComplexity, args["after"].(*entgql.Cursor[int]), args["first"].(*int), args["before"].(*entgql.Cursor[int]), args["last"].(*int)), true
+
 	case "Query.node":
 		if e.complexity.Query.Node == nil {
 			break
@@ -145,62 +287,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Nodes(childComplexity, args["ids"].([]int)), true
 
-	case "Query.todos":
-		if e.complexity.Query.Todos == nil {
-			break
-		}
-
-		return e.complexity.Query.Todos(childComplexity), true
-
-	case "Todo.children":
-		if e.complexity.Todo.Children == nil {
-			break
-		}
-
-		return e.complexity.Todo.Children(childComplexity), true
-
-	case "Todo.createdAt":
-		if e.complexity.Todo.CreatedAt == nil {
-			break
-		}
-
-		return e.complexity.Todo.CreatedAt(childComplexity), true
-
-	case "Todo.id":
-		if e.complexity.Todo.ID == nil {
-			break
-		}
-
-		return e.complexity.Todo.ID(childComplexity), true
-
-	case "Todo.parent":
-		if e.complexity.Todo.Parent == nil {
-			break
-		}
-
-		return e.complexity.Todo.Parent(childComplexity), true
-
-	case "Todo.priority":
-		if e.complexity.Todo.Priority == nil {
-			break
-		}
-
-		return e.complexity.Todo.Priority(childComplexity), true
-
-	case "Todo.status":
-		if e.complexity.Todo.Status == nil {
-			break
-		}
-
-		return e.complexity.Todo.Status(childComplexity), true
-
-	case "Todo.text":
-		if e.complexity.Todo.Text == nil {
-			break
-		}
-
-		return e.complexity.Todo.Text(childComplexity), true
-
 	}
 	return 0, false
 }
@@ -209,7 +295,8 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	rc := graphql.GetOperationContext(ctx)
 	ec := executionContext{rc, e}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
-		ec.unmarshalInputCreateTodoInput,
+		ec.unmarshalInputCreateCoffeeInput,
+		ec.unmarshalInputUpdateCoffeeInput,
 	)
 	first := true
 
@@ -270,19 +357,52 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
+	{Name: "gql/coffee.graphql", Input: `type Mutation {
+    # The input and the output are types generated by Ent.
+    createCoffee(input: CreateCoffeeInput!): Coffee
+    deleteCoffee(id: ID!): ID
+    updateCoffee(id: ID!, input: UpdateCoffeeInput!): Coffee
+}`, BuiltIn: false},
 	{Name: "gql/ent.graphql", Input: `directive @goField(forceResolver: Boolean, name: String) on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
 directive @goModel(model: String, models: [String!]) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
+type Coffee implements Node {
+  id: ID!
+  sugar: Int!
+  coffee: Int!
+  powderedMilk: Int!
+  coffeeMate: Int!
+  milk: Int!
+  water: Int!
+  rating: Float!
+}
+"""A connection to a list of items."""
+type CoffeeConnection {
+  """A list of edges."""
+  edges: [CoffeeEdge]
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+  """Identifies the total count of items in the connection."""
+  totalCount: Int!
+}
+"""An edge in a connection."""
+type CoffeeEdge {
+  """The item at the end of the edge."""
+  node: Coffee
+  """A cursor for use in pagination."""
+  cursor: Cursor!
+}
 """
-CreateTodoInput is used for create Todo object.
+CreateCoffeeInput is used for create Coffee object.
 Input was generated by ent.
 """
-input CreateTodoInput {
-  text: String!
-  createdAt: Time
-  status: TodoStatus
-  priority: Int
-  childIDs: [ID!]
-  parentID: ID
+input CreateCoffeeInput {
+  sugar: Int!
+  coffee: Int!
+  powderedMilk: Int!
+  coffeeMate: Int!
+  milk: Int!
+  water: Int!
+  rating: Float!
 }
 """
 Define a Relay Cursor type:
@@ -329,28 +449,33 @@ type Query {
     """The list of node IDs."""
     ids: [ID!]!
   ): [Node]!
-  todos: [Todo!]!
+  coffees(
+    """Returns the elements in the list that come after the specified cursor."""
+    after: Cursor
+
+    """Returns the first _n_ elements from the list."""
+    first: Int
+
+    """Returns the elements in the list that come before the specified cursor."""
+    before: Cursor
+
+    """Returns the last _n_ elements from the list."""
+    last: Int
+  ): CoffeeConnection!
 }
-"""The builtin Time type"""
-scalar Time
-type Todo implements Node {
-  id: ID!
-  text: String!
-  createdAt: Time!
-  status: TodoStatus!
-  priority: Int!
-  children: [Todo!]
-  parent: Todo
-}
-"""TodoStatus is enum for the field status"""
-enum TodoStatus @goModel(model: "main/ent/todo.Status") {
-  IN_PROGRESS
-  COMPLETED
+"""
+UpdateCoffeeInput is used for update Coffee object.
+Input was generated by ent.
+"""
+input UpdateCoffeeInput {
+  sugar: Int
+  coffee: Int
+  powderedMilk: Int
+  coffeeMate: Int
+  milk: Int
+  water: Int
+  rating: Float
 }
 `, BuiltIn: false},
-	{Name: "gql/todo.graphql", Input: `type Mutation {
-    # The input and the output are types generated by Ent.
-    createTodo(input: CreateTodoInput!): Todo
-}`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)

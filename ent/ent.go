@@ -6,7 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"main/ent/todo"
+	"main/ent/coffee"
 	"reflect"
 	"sync"
 
@@ -73,7 +73,7 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			todo.Table: todo.ValidColumn,
+			coffee.Table: coffee.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

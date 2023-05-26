@@ -5,7 +5,7 @@ package ent
 import (
 	"context"
 	"fmt"
-	"main/ent/todo"
+	"main/ent/coffee"
 	"sync"
 	"sync/atomic"
 
@@ -24,7 +24,7 @@ type Noder interface {
 }
 
 // IsNode implements the Node interface check for GQLGen.
-func (n *Todo) IsNode() {}
+func (n *Coffee) IsNode() {}
 
 var errNodeInvalidID = &NotFoundError{"node"}
 
@@ -84,10 +84,10 @@ func (c *Client) Noder(ctx context.Context, id int, opts ...NodeOption) (_ Noder
 
 func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error) {
 	switch table {
-	case todo.Table:
-		query := c.Todo.Query().
-			Where(todo.ID(id))
-		query, err := query.CollectFields(ctx, "Todo")
+	case coffee.Table:
+		query := c.Coffee.Query().
+			Where(coffee.ID(id))
+		query, err := query.CollectFields(ctx, "Coffee")
 		if err != nil {
 			return nil, err
 		}
@@ -169,10 +169,10 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 		idmap[id] = append(idmap[id], &noders[i])
 	}
 	switch table {
-	case todo.Table:
-		query := c.Todo.Query().
-			Where(todo.IDIn(ids...))
-		query, err := query.CollectFields(ctx, "Todo")
+	case coffee.Table:
+		query := c.Coffee.Query().
+			Where(coffee.IDIn(ids...))
+		query, err := query.CollectFields(ctx, "Coffee")
 		if err != nil {
 			return nil, err
 		}

@@ -19,7 +19,10 @@ exec:
 # provided package. If they match it will use them, otherwise it will generate new.
 autobind:
   - main/ent
-  - main/ent/todo
+  - main/ent/coffee
+
+model:
+  filename: resolver/models/models_gen.go
 
 # This section declares type mapping between the GraphQL and Go type systems.
 models:
@@ -30,3 +33,4 @@ models:
   Node:
     model:
       - main/ent.Noder
+  

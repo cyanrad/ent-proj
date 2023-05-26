@@ -4,74 +4,67 @@ package ent
 
 import (
 	"context"
-	"main/ent/todo"
+	"main/ent/coffee"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/99designs/gqlgen/graphql"
 )
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
-func (t *TodoQuery) CollectFields(ctx context.Context, satisfies ...string) (*TodoQuery, error) {
+func (c *CoffeeQuery) CollectFields(ctx context.Context, satisfies ...string) (*CoffeeQuery, error) {
 	fc := graphql.GetFieldContext(ctx)
 	if fc == nil {
-		return t, nil
+		return c, nil
 	}
-	if err := t.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+	if err := c.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
 		return nil, err
 	}
-	return t, nil
+	return c, nil
 }
 
-func (t *TodoQuery) collectField(ctx context.Context, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+func (c *CoffeeQuery) collectField(ctx context.Context, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
 	path = append([]string(nil), path...)
 	var (
 		unknownSeen    bool
-		fieldSeen      = make(map[string]struct{}, len(todo.Columns))
-		selectedFields = []string{todo.FieldID}
+		fieldSeen      = make(map[string]struct{}, len(coffee.Columns))
+		selectedFields = []string{coffee.FieldID}
 	)
 	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
 		switch field.Name {
-		case "children":
-			var (
-				alias = field.Alias
-				path  = append(path, alias)
-				query = (&TodoClient{config: t.config}).Query()
-			)
-			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
-				return err
+		case "sugar":
+			if _, ok := fieldSeen[coffee.FieldSugar]; !ok {
+				selectedFields = append(selectedFields, coffee.FieldSugar)
+				fieldSeen[coffee.FieldSugar] = struct{}{}
 			}
-			t.WithNamedChildren(alias, func(wq *TodoQuery) {
-				*wq = *query
-			})
-		case "parent":
-			var (
-				alias = field.Alias
-				path  = append(path, alias)
-				query = (&TodoClient{config: t.config}).Query()
-			)
-			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
-				return err
+		case "coffee":
+			if _, ok := fieldSeen[coffee.FieldCoffee]; !ok {
+				selectedFields = append(selectedFields, coffee.FieldCoffee)
+				fieldSeen[coffee.FieldCoffee] = struct{}{}
 			}
-			t.withParent = query
-		case "text":
-			if _, ok := fieldSeen[todo.FieldText]; !ok {
-				selectedFields = append(selectedFields, todo.FieldText)
-				fieldSeen[todo.FieldText] = struct{}{}
+		case "powderedMilk":
+			if _, ok := fieldSeen[coffee.FieldPowderedMilk]; !ok {
+				selectedFields = append(selectedFields, coffee.FieldPowderedMilk)
+				fieldSeen[coffee.FieldPowderedMilk] = struct{}{}
 			}
-		case "createdAt":
-			if _, ok := fieldSeen[todo.FieldCreatedAt]; !ok {
-				selectedFields = append(selectedFields, todo.FieldCreatedAt)
-				fieldSeen[todo.FieldCreatedAt] = struct{}{}
+		case "coffeeMate":
+			if _, ok := fieldSeen[coffee.FieldCoffeeMate]; !ok {
+				selectedFields = append(selectedFields, coffee.FieldCoffeeMate)
+				fieldSeen[coffee.FieldCoffeeMate] = struct{}{}
 			}
-		case "status":
-			if _, ok := fieldSeen[todo.FieldStatus]; !ok {
-				selectedFields = append(selectedFields, todo.FieldStatus)
-				fieldSeen[todo.FieldStatus] = struct{}{}
+		case "milk":
+			if _, ok := fieldSeen[coffee.FieldMilk]; !ok {
+				selectedFields = append(selectedFields, coffee.FieldMilk)
+				fieldSeen[coffee.FieldMilk] = struct{}{}
 			}
-		case "priority":
-			if _, ok := fieldSeen[todo.FieldPriority]; !ok {
-				selectedFields = append(selectedFields, todo.FieldPriority)
-				fieldSeen[todo.FieldPriority] = struct{}{}
+		case "water":
+			if _, ok := fieldSeen[coffee.FieldWater]; !ok {
+				selectedFields = append(selectedFields, coffee.FieldWater)
+				fieldSeen[coffee.FieldWater] = struct{}{}
+			}
+		case "rating":
+			if _, ok := fieldSeen[coffee.FieldRating]; !ok {
+				selectedFields = append(selectedFields, coffee.FieldRating)
+				fieldSeen[coffee.FieldRating] = struct{}{}
 			}
 		case "id":
 		case "__typename":
@@ -80,19 +73,19 @@ func (t *TodoQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 		}
 	}
 	if !unknownSeen {
-		t.Select(selectedFields...)
+		c.Select(selectedFields...)
 	}
 	return nil
 }
 
-type todoPaginateArgs struct {
+type coffeePaginateArgs struct {
 	first, last   *int
 	after, before *Cursor
-	opts          []TodoPaginateOption
+	opts          []CoffeePaginateOption
 }
 
-func newTodoPaginateArgs(rv map[string]any) *todoPaginateArgs {
-	args := &todoPaginateArgs{}
+func newCoffeePaginateArgs(rv map[string]any) *coffeePaginateArgs {
+	args := &coffeePaginateArgs{}
 	if rv == nil {
 		return args
 	}

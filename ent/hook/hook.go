@@ -8,16 +8,16 @@ import (
 	"main/ent"
 )
 
-// The TodoFunc type is an adapter to allow the use of ordinary
-// function as Todo mutator.
-type TodoFunc func(context.Context, *ent.TodoMutation) (ent.Value, error)
+// The CoffeeFunc type is an adapter to allow the use of ordinary
+// function as Coffee mutator.
+type CoffeeFunc func(context.Context, *ent.CoffeeMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f TodoFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.TodoMutation); ok {
+func (f CoffeeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.CoffeeMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TodoMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CoffeeMutation", m)
 }
 
 // Condition is a hook condition function.

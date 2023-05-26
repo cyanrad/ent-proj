@@ -7,7 +7,9 @@ import (
 	"context"
 	"fmt"
 	"main/ent"
-	generated1 "main/resolver/generated"
+	"main/resolver/generated"
+
+	"entgo.io/contrib/entgql"
 )
 
 func (r *queryResolver) Node(ctx context.Context, id int) (ent.Noder, error) {
@@ -18,11 +20,14 @@ func (r *queryResolver) Nodes(ctx context.Context, ids []int) ([]ent.Noder, erro
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Todos(ctx context.Context) ([]*ent.Todo, error) {
-	return r.client.Todo.Query().All(ctx)
+func (r *queryResolver) Coffees(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int) (*ent.CoffeeConnection, error) {
+	return r.client.Coffee.Query().
+		Paginate(ctx, after, first, before, last,
+			ent.WithCoffeeOrder(ent.DefaultCoffeeOrder),
+		)
 }
 
-// Query returns generated1.QueryResolver implementation.
-func (r *Resolver) Query() generated1.QueryResolver { return &queryResolver{r} }
+// Query returns generated.QueryResolver implementation.
+func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 type queryResolver struct{ *Resolver }

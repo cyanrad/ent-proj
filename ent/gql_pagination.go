@@ -5,7 +5,7 @@ package ent
 import (
 	"context"
 	"errors"
-	"main/ent/todo"
+	"main/ent/coffee"
 
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
@@ -95,20 +95,20 @@ func paginateLimit(first, last *int) int {
 	return limit
 }
 
-// TodoEdge is the edge representation of Todo.
-type TodoEdge struct {
-	Node   *Todo  `json:"node"`
-	Cursor Cursor `json:"cursor"`
+// CoffeeEdge is the edge representation of Coffee.
+type CoffeeEdge struct {
+	Node   *Coffee `json:"node"`
+	Cursor Cursor  `json:"cursor"`
 }
 
-// TodoConnection is the connection containing edges to Todo.
-type TodoConnection struct {
-	Edges      []*TodoEdge `json:"edges"`
-	PageInfo   PageInfo    `json:"pageInfo"`
-	TotalCount int         `json:"totalCount"`
+// CoffeeConnection is the connection containing edges to Coffee.
+type CoffeeConnection struct {
+	Edges      []*CoffeeEdge `json:"edges"`
+	PageInfo   PageInfo      `json:"pageInfo"`
+	TotalCount int           `json:"totalCount"`
 }
 
-func (c *TodoConnection) build(nodes []*Todo, pager *todoPager, after *Cursor, first *int, before *Cursor, last *int) {
+func (c *CoffeeConnection) build(nodes []*Coffee, pager *coffeePager, after *Cursor, first *int, before *Cursor, last *int) {
 	c.PageInfo.HasNextPage = before != nil
 	c.PageInfo.HasPreviousPage = after != nil
 	if first != nil && *first+1 == len(nodes) {
@@ -118,21 +118,21 @@ func (c *TodoConnection) build(nodes []*Todo, pager *todoPager, after *Cursor, f
 		c.PageInfo.HasPreviousPage = true
 		nodes = nodes[:len(nodes)-1]
 	}
-	var nodeAt func(int) *Todo
+	var nodeAt func(int) *Coffee
 	if last != nil {
 		n := len(nodes) - 1
-		nodeAt = func(i int) *Todo {
+		nodeAt = func(i int) *Coffee {
 			return nodes[n-i]
 		}
 	} else {
-		nodeAt = func(i int) *Todo {
+		nodeAt = func(i int) *Coffee {
 			return nodes[i]
 		}
 	}
-	c.Edges = make([]*TodoEdge, len(nodes))
+	c.Edges = make([]*CoffeeEdge, len(nodes))
 	for i := range nodes {
 		node := nodeAt(i)
-		c.Edges[i] = &TodoEdge{
+		c.Edges[i] = &CoffeeEdge{
 			Node:   node,
 			Cursor: pager.toCursor(node),
 		}
@@ -146,87 +146,87 @@ func (c *TodoConnection) build(nodes []*Todo, pager *todoPager, after *Cursor, f
 	}
 }
 
-// TodoPaginateOption enables pagination customization.
-type TodoPaginateOption func(*todoPager) error
+// CoffeePaginateOption enables pagination customization.
+type CoffeePaginateOption func(*coffeePager) error
 
-// WithTodoOrder configures pagination ordering.
-func WithTodoOrder(order *TodoOrder) TodoPaginateOption {
+// WithCoffeeOrder configures pagination ordering.
+func WithCoffeeOrder(order *CoffeeOrder) CoffeePaginateOption {
 	if order == nil {
-		order = DefaultTodoOrder
+		order = DefaultCoffeeOrder
 	}
 	o := *order
-	return func(pager *todoPager) error {
+	return func(pager *coffeePager) error {
 		if err := o.Direction.Validate(); err != nil {
 			return err
 		}
 		if o.Field == nil {
-			o.Field = DefaultTodoOrder.Field
+			o.Field = DefaultCoffeeOrder.Field
 		}
 		pager.order = &o
 		return nil
 	}
 }
 
-// WithTodoFilter configures pagination filter.
-func WithTodoFilter(filter func(*TodoQuery) (*TodoQuery, error)) TodoPaginateOption {
-	return func(pager *todoPager) error {
+// WithCoffeeFilter configures pagination filter.
+func WithCoffeeFilter(filter func(*CoffeeQuery) (*CoffeeQuery, error)) CoffeePaginateOption {
+	return func(pager *coffeePager) error {
 		if filter == nil {
-			return errors.New("TodoQuery filter cannot be nil")
+			return errors.New("CoffeeQuery filter cannot be nil")
 		}
 		pager.filter = filter
 		return nil
 	}
 }
 
-type todoPager struct {
+type coffeePager struct {
 	reverse bool
-	order   *TodoOrder
-	filter  func(*TodoQuery) (*TodoQuery, error)
+	order   *CoffeeOrder
+	filter  func(*CoffeeQuery) (*CoffeeQuery, error)
 }
 
-func newTodoPager(opts []TodoPaginateOption, reverse bool) (*todoPager, error) {
-	pager := &todoPager{reverse: reverse}
+func newCoffeePager(opts []CoffeePaginateOption, reverse bool) (*coffeePager, error) {
+	pager := &coffeePager{reverse: reverse}
 	for _, opt := range opts {
 		if err := opt(pager); err != nil {
 			return nil, err
 		}
 	}
 	if pager.order == nil {
-		pager.order = DefaultTodoOrder
+		pager.order = DefaultCoffeeOrder
 	}
 	return pager, nil
 }
 
-func (p *todoPager) applyFilter(query *TodoQuery) (*TodoQuery, error) {
+func (p *coffeePager) applyFilter(query *CoffeeQuery) (*CoffeeQuery, error) {
 	if p.filter != nil {
 		return p.filter(query)
 	}
 	return query, nil
 }
 
-func (p *todoPager) toCursor(t *Todo) Cursor {
-	return p.order.Field.toCursor(t)
+func (p *coffeePager) toCursor(c *Coffee) Cursor {
+	return p.order.Field.toCursor(c)
 }
 
-func (p *todoPager) applyCursors(query *TodoQuery, after, before *Cursor) (*TodoQuery, error) {
+func (p *coffeePager) applyCursors(query *CoffeeQuery, after, before *Cursor) (*CoffeeQuery, error) {
 	direction := p.order.Direction
 	if p.reverse {
 		direction = direction.Reverse()
 	}
-	for _, predicate := range entgql.CursorsPredicate(after, before, DefaultTodoOrder.Field.column, p.order.Field.column, direction) {
+	for _, predicate := range entgql.CursorsPredicate(after, before, DefaultCoffeeOrder.Field.column, p.order.Field.column, direction) {
 		query = query.Where(predicate)
 	}
 	return query, nil
 }
 
-func (p *todoPager) applyOrder(query *TodoQuery) *TodoQuery {
+func (p *coffeePager) applyOrder(query *CoffeeQuery) *CoffeeQuery {
 	direction := p.order.Direction
 	if p.reverse {
 		direction = direction.Reverse()
 	}
 	query = query.Order(p.order.Field.toTerm(direction.OrderTermOption()))
-	if p.order.Field != DefaultTodoOrder.Field {
-		query = query.Order(DefaultTodoOrder.Field.toTerm(direction.OrderTermOption()))
+	if p.order.Field != DefaultCoffeeOrder.Field {
+		query = query.Order(DefaultCoffeeOrder.Field.toTerm(direction.OrderTermOption()))
 	}
 	if len(query.ctx.Fields) > 0 {
 		query.ctx.AppendFieldOnce(p.order.Field.column)
@@ -234,7 +234,7 @@ func (p *todoPager) applyOrder(query *TodoQuery) *TodoQuery {
 	return query
 }
 
-func (p *todoPager) orderExpr(query *TodoQuery) sql.Querier {
+func (p *coffeePager) orderExpr(query *CoffeeQuery) sql.Querier {
 	direction := p.order.Direction
 	if p.reverse {
 		direction = direction.Reverse()
@@ -244,33 +244,33 @@ func (p *todoPager) orderExpr(query *TodoQuery) sql.Querier {
 	}
 	return sql.ExprFunc(func(b *sql.Builder) {
 		b.Ident(p.order.Field.column).Pad().WriteString(string(direction))
-		if p.order.Field != DefaultTodoOrder.Field {
-			b.Comma().Ident(DefaultTodoOrder.Field.column).Pad().WriteString(string(direction))
+		if p.order.Field != DefaultCoffeeOrder.Field {
+			b.Comma().Ident(DefaultCoffeeOrder.Field.column).Pad().WriteString(string(direction))
 		}
 	})
 }
 
-// Paginate executes the query and returns a relay based cursor connection to Todo.
-func (t *TodoQuery) Paginate(
+// Paginate executes the query and returns a relay based cursor connection to Coffee.
+func (c *CoffeeQuery) Paginate(
 	ctx context.Context, after *Cursor, first *int,
-	before *Cursor, last *int, opts ...TodoPaginateOption,
-) (*TodoConnection, error) {
+	before *Cursor, last *int, opts ...CoffeePaginateOption,
+) (*CoffeeConnection, error) {
 	if err := validateFirstLast(first, last); err != nil {
 		return nil, err
 	}
-	pager, err := newTodoPager(opts, last != nil)
+	pager, err := newCoffeePager(opts, last != nil)
 	if err != nil {
 		return nil, err
 	}
-	if t, err = pager.applyFilter(t); err != nil {
+	if c, err = pager.applyFilter(c); err != nil {
 		return nil, err
 	}
-	conn := &TodoConnection{Edges: []*TodoEdge{}}
+	conn := &CoffeeConnection{Edges: []*CoffeeEdge{}}
 	ignoredEdges := !hasCollectedField(ctx, edgesField)
 	if hasCollectedField(ctx, totalCountField) || hasCollectedField(ctx, pageInfoField) {
 		hasPagination := after != nil || first != nil || before != nil || last != nil
 		if hasPagination || ignoredEdges {
-			if conn.TotalCount, err = t.Clone().Count(ctx); err != nil {
+			if conn.TotalCount, err = c.Clone().Count(ctx); err != nil {
 				return nil, err
 			}
 			conn.PageInfo.HasNextPage = first != nil && conn.TotalCount > 0
@@ -280,19 +280,19 @@ func (t *TodoQuery) Paginate(
 	if ignoredEdges || (first != nil && *first == 0) || (last != nil && *last == 0) {
 		return conn, nil
 	}
-	if t, err = pager.applyCursors(t, after, before); err != nil {
+	if c, err = pager.applyCursors(c, after, before); err != nil {
 		return nil, err
 	}
 	if limit := paginateLimit(first, last); limit != 0 {
-		t.Limit(limit)
+		c.Limit(limit)
 	}
 	if field := collectedField(ctx, edgesField, nodeField); field != nil {
-		if err := t.collectField(ctx, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
+		if err := c.collectField(ctx, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
 			return nil, err
 		}
 	}
-	t = pager.applyOrder(t)
-	nodes, err := t.All(ctx)
+	c = pager.applyOrder(c)
+	nodes, err := c.All(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -300,43 +300,43 @@ func (t *TodoQuery) Paginate(
 	return conn, nil
 }
 
-// TodoOrderField defines the ordering field of Todo.
-type TodoOrderField struct {
-	// Value extracts the ordering value from the given Todo.
-	Value    func(*Todo) (ent.Value, error)
+// CoffeeOrderField defines the ordering field of Coffee.
+type CoffeeOrderField struct {
+	// Value extracts the ordering value from the given Coffee.
+	Value    func(*Coffee) (ent.Value, error)
 	column   string // field or computed.
-	toTerm   func(...sql.OrderTermOption) todo.OrderOption
-	toCursor func(*Todo) Cursor
+	toTerm   func(...sql.OrderTermOption) coffee.OrderOption
+	toCursor func(*Coffee) Cursor
 }
 
-// TodoOrder defines the ordering of Todo.
-type TodoOrder struct {
-	Direction OrderDirection  `json:"direction"`
-	Field     *TodoOrderField `json:"field"`
+// CoffeeOrder defines the ordering of Coffee.
+type CoffeeOrder struct {
+	Direction OrderDirection    `json:"direction"`
+	Field     *CoffeeOrderField `json:"field"`
 }
 
-// DefaultTodoOrder is the default ordering of Todo.
-var DefaultTodoOrder = &TodoOrder{
+// DefaultCoffeeOrder is the default ordering of Coffee.
+var DefaultCoffeeOrder = &CoffeeOrder{
 	Direction: entgql.OrderDirectionAsc,
-	Field: &TodoOrderField{
-		Value: func(t *Todo) (ent.Value, error) {
-			return t.ID, nil
+	Field: &CoffeeOrderField{
+		Value: func(c *Coffee) (ent.Value, error) {
+			return c.ID, nil
 		},
-		column: todo.FieldID,
-		toTerm: todo.ByID,
-		toCursor: func(t *Todo) Cursor {
-			return Cursor{ID: t.ID}
+		column: coffee.FieldID,
+		toTerm: coffee.ByID,
+		toCursor: func(c *Coffee) Cursor {
+			return Cursor{ID: c.ID}
 		},
 	},
 }
 
-// ToEdge converts Todo into TodoEdge.
-func (t *Todo) ToEdge(order *TodoOrder) *TodoEdge {
+// ToEdge converts Coffee into CoffeeEdge.
+func (c *Coffee) ToEdge(order *CoffeeOrder) *CoffeeEdge {
 	if order == nil {
-		order = DefaultTodoOrder
+		order = DefaultCoffeeOrder
 	}
-	return &TodoEdge{
-		Node:   t,
-		Cursor: order.Field.toCursor(t),
+	return &CoffeeEdge{
+		Node:   c,
+		Cursor: order.Field.toCursor(c),
 	}
 }

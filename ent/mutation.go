@@ -6,10 +6,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"main/ent/coffee"
 	"main/ent/predicate"
-	"main/ent/todo"
 	"sync"
-	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -24,42 +23,46 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeTodo = "Todo"
+	TypeCoffee = "Coffee"
 )
 
-// TodoMutation represents an operation that mutates the Todo nodes in the graph.
-type TodoMutation struct {
+// CoffeeMutation represents an operation that mutates the Coffee nodes in the graph.
+type CoffeeMutation struct {
 	config
-	op              Op
-	typ             string
-	id              *int
-	text            *string
-	created_at      *time.Time
-	status          *todo.Status
-	priority        *int
-	addpriority     *int
-	clearedFields   map[string]struct{}
-	children        map[int]struct{}
-	removedchildren map[int]struct{}
-	clearedchildren bool
-	parent          *int
-	clearedparent   bool
-	done            bool
-	oldValue        func(context.Context) (*Todo, error)
-	predicates      []predicate.Todo
+	op               Op
+	typ              string
+	id               *int
+	sugar            *int
+	addsugar         *int
+	coffee           *int
+	addcoffee        *int
+	powdered_milk    *int
+	addpowdered_milk *int
+	coffee_mate      *int
+	addcoffee_mate   *int
+	milk             *int
+	addmilk          *int
+	water            *int
+	addwater         *int
+	rating           *float64
+	addrating        *float64
+	clearedFields    map[string]struct{}
+	done             bool
+	oldValue         func(context.Context) (*Coffee, error)
+	predicates       []predicate.Coffee
 }
 
-var _ ent.Mutation = (*TodoMutation)(nil)
+var _ ent.Mutation = (*CoffeeMutation)(nil)
 
-// todoOption allows management of the mutation configuration using functional options.
-type todoOption func(*TodoMutation)
+// coffeeOption allows management of the mutation configuration using functional options.
+type coffeeOption func(*CoffeeMutation)
 
-// newTodoMutation creates new mutation for the Todo entity.
-func newTodoMutation(c config, op Op, opts ...todoOption) *TodoMutation {
-	m := &TodoMutation{
+// newCoffeeMutation creates new mutation for the Coffee entity.
+func newCoffeeMutation(c config, op Op, opts ...coffeeOption) *CoffeeMutation {
+	m := &CoffeeMutation{
 		config:        c,
 		op:            op,
-		typ:           TypeTodo,
+		typ:           TypeCoffee,
 		clearedFields: make(map[string]struct{}),
 	}
 	for _, opt := range opts {
@@ -68,20 +71,20 @@ func newTodoMutation(c config, op Op, opts ...todoOption) *TodoMutation {
 	return m
 }
 
-// withTodoID sets the ID field of the mutation.
-func withTodoID(id int) todoOption {
-	return func(m *TodoMutation) {
+// withCoffeeID sets the ID field of the mutation.
+func withCoffeeID(id int) coffeeOption {
+	return func(m *CoffeeMutation) {
 		var (
 			err   error
 			once  sync.Once
-			value *Todo
+			value *Coffee
 		)
-		m.oldValue = func(ctx context.Context) (*Todo, error) {
+		m.oldValue = func(ctx context.Context) (*Coffee, error) {
 			once.Do(func() {
 				if m.done {
 					err = errors.New("querying old values post mutation is not allowed")
 				} else {
-					value, err = m.Client().Todo.Get(ctx, id)
+					value, err = m.Client().Coffee.Get(ctx, id)
 				}
 			})
 			return value, err
@@ -90,10 +93,10 @@ func withTodoID(id int) todoOption {
 	}
 }
 
-// withTodo sets the old Todo of the mutation.
-func withTodo(node *Todo) todoOption {
-	return func(m *TodoMutation) {
-		m.oldValue = func(context.Context) (*Todo, error) {
+// withCoffee sets the old Coffee of the mutation.
+func withCoffee(node *Coffee) coffeeOption {
+	return func(m *CoffeeMutation) {
+		m.oldValue = func(context.Context) (*Coffee, error) {
 			return node, nil
 		}
 		m.id = &node.ID
@@ -102,7 +105,7 @@ func withTodo(node *Todo) todoOption {
 
 // Client returns a new `ent.Client` from the mutation. If the mutation was
 // executed in a transaction (ent.Tx), a transactional client is returned.
-func (m TodoMutation) Client() *Client {
+func (m CoffeeMutation) Client() *Client {
 	client := &Client{config: m.config}
 	client.init()
 	return client
@@ -110,7 +113,7 @@ func (m TodoMutation) Client() *Client {
 
 // Tx returns an `ent.Tx` for mutations that were executed in transactions;
 // it returns an error otherwise.
-func (m TodoMutation) Tx() (*Tx, error) {
+func (m CoffeeMutation) Tx() (*Tx, error) {
 	if _, ok := m.driver.(*txDriver); !ok {
 		return nil, errors.New("ent: mutation is not running in a transaction")
 	}
@@ -121,7 +124,7 @@ func (m TodoMutation) Tx() (*Tx, error) {
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *TodoMutation) ID() (id int, exists bool) {
+func (m *CoffeeMutation) ID() (id int, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -132,7 +135,7 @@ func (m *TodoMutation) ID() (id int, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *TodoMutation) IDs(ctx context.Context) ([]int, error) {
+func (m *CoffeeMutation) IDs(ctx context.Context) ([]int, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
@@ -141,278 +144,413 @@ func (m *TodoMutation) IDs(ctx context.Context) ([]int, error) {
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().Todo.Query().Where(m.predicates...).IDs(ctx)
+		return m.Client().Coffee.Query().Where(m.predicates...).IDs(ctx)
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
 }
 
-// SetText sets the "text" field.
-func (m *TodoMutation) SetText(s string) {
-	m.text = &s
+// SetSugar sets the "sugar" field.
+func (m *CoffeeMutation) SetSugar(i int) {
+	m.sugar = &i
+	m.addsugar = nil
 }
 
-// Text returns the value of the "text" field in the mutation.
-func (m *TodoMutation) Text() (r string, exists bool) {
-	v := m.text
+// Sugar returns the value of the "sugar" field in the mutation.
+func (m *CoffeeMutation) Sugar() (r int, exists bool) {
+	v := m.sugar
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldText returns the old "text" field's value of the Todo entity.
-// If the Todo object wasn't provided to the builder, the object is fetched from the database.
+// OldSugar returns the old "sugar" field's value of the Coffee entity.
+// If the Coffee object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TodoMutation) OldText(ctx context.Context) (v string, err error) {
+func (m *CoffeeMutation) OldSugar(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldText is only allowed on UpdateOne operations")
+		return v, errors.New("OldSugar is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldText requires an ID field in the mutation")
+		return v, errors.New("OldSugar requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldText: %w", err)
+		return v, fmt.Errorf("querying old value for OldSugar: %w", err)
 	}
-	return oldValue.Text, nil
+	return oldValue.Sugar, nil
 }
 
-// ResetText resets all changes to the "text" field.
-func (m *TodoMutation) ResetText() {
-	m.text = nil
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *TodoMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *TodoMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the Todo entity.
-// If the Todo object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TodoMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *TodoMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetStatus sets the "status" field.
-func (m *TodoMutation) SetStatus(t todo.Status) {
-	m.status = &t
-}
-
-// Status returns the value of the "status" field in the mutation.
-func (m *TodoMutation) Status() (r todo.Status, exists bool) {
-	v := m.status
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldStatus returns the old "status" field's value of the Todo entity.
-// If the Todo object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TodoMutation) OldStatus(ctx context.Context) (v todo.Status, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldStatus requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
-	}
-	return oldValue.Status, nil
-}
-
-// ResetStatus resets all changes to the "status" field.
-func (m *TodoMutation) ResetStatus() {
-	m.status = nil
-}
-
-// SetPriority sets the "priority" field.
-func (m *TodoMutation) SetPriority(i int) {
-	m.priority = &i
-	m.addpriority = nil
-}
-
-// Priority returns the value of the "priority" field in the mutation.
-func (m *TodoMutation) Priority() (r int, exists bool) {
-	v := m.priority
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldPriority returns the old "priority" field's value of the Todo entity.
-// If the Todo object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TodoMutation) OldPriority(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldPriority is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldPriority requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldPriority: %w", err)
-	}
-	return oldValue.Priority, nil
-}
-
-// AddPriority adds i to the "priority" field.
-func (m *TodoMutation) AddPriority(i int) {
-	if m.addpriority != nil {
-		*m.addpriority += i
+// AddSugar adds i to the "sugar" field.
+func (m *CoffeeMutation) AddSugar(i int) {
+	if m.addsugar != nil {
+		*m.addsugar += i
 	} else {
-		m.addpriority = &i
+		m.addsugar = &i
 	}
 }
 
-// AddedPriority returns the value that was added to the "priority" field in this mutation.
-func (m *TodoMutation) AddedPriority() (r int, exists bool) {
-	v := m.addpriority
+// AddedSugar returns the value that was added to the "sugar" field in this mutation.
+func (m *CoffeeMutation) AddedSugar() (r int, exists bool) {
+	v := m.addsugar
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// ResetPriority resets all changes to the "priority" field.
-func (m *TodoMutation) ResetPriority() {
-	m.priority = nil
-	m.addpriority = nil
+// ResetSugar resets all changes to the "sugar" field.
+func (m *CoffeeMutation) ResetSugar() {
+	m.sugar = nil
+	m.addsugar = nil
 }
 
-// AddChildIDs adds the "children" edge to the Todo entity by ids.
-func (m *TodoMutation) AddChildIDs(ids ...int) {
-	if m.children == nil {
-		m.children = make(map[int]struct{})
+// SetCoffee sets the "coffee" field.
+func (m *CoffeeMutation) SetCoffee(i int) {
+	m.coffee = &i
+	m.addcoffee = nil
+}
+
+// Coffee returns the value of the "coffee" field in the mutation.
+func (m *CoffeeMutation) Coffee() (r int, exists bool) {
+	v := m.coffee
+	if v == nil {
+		return
 	}
-	for i := range ids {
-		m.children[ids[i]] = struct{}{}
+	return *v, true
+}
+
+// OldCoffee returns the old "coffee" field's value of the Coffee entity.
+// If the Coffee object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CoffeeMutation) OldCoffee(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCoffee is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCoffee requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCoffee: %w", err)
+	}
+	return oldValue.Coffee, nil
+}
+
+// AddCoffee adds i to the "coffee" field.
+func (m *CoffeeMutation) AddCoffee(i int) {
+	if m.addcoffee != nil {
+		*m.addcoffee += i
+	} else {
+		m.addcoffee = &i
 	}
 }
 
-// ClearChildren clears the "children" edge to the Todo entity.
-func (m *TodoMutation) ClearChildren() {
-	m.clearedchildren = true
-}
-
-// ChildrenCleared reports if the "children" edge to the Todo entity was cleared.
-func (m *TodoMutation) ChildrenCleared() bool {
-	return m.clearedchildren
-}
-
-// RemoveChildIDs removes the "children" edge to the Todo entity by IDs.
-func (m *TodoMutation) RemoveChildIDs(ids ...int) {
-	if m.removedchildren == nil {
-		m.removedchildren = make(map[int]struct{})
+// AddedCoffee returns the value that was added to the "coffee" field in this mutation.
+func (m *CoffeeMutation) AddedCoffee() (r int, exists bool) {
+	v := m.addcoffee
+	if v == nil {
+		return
 	}
-	for i := range ids {
-		delete(m.children, ids[i])
-		m.removedchildren[ids[i]] = struct{}{}
+	return *v, true
+}
+
+// ResetCoffee resets all changes to the "coffee" field.
+func (m *CoffeeMutation) ResetCoffee() {
+	m.coffee = nil
+	m.addcoffee = nil
+}
+
+// SetPowderedMilk sets the "powdered_milk" field.
+func (m *CoffeeMutation) SetPowderedMilk(i int) {
+	m.powdered_milk = &i
+	m.addpowdered_milk = nil
+}
+
+// PowderedMilk returns the value of the "powdered_milk" field in the mutation.
+func (m *CoffeeMutation) PowderedMilk() (r int, exists bool) {
+	v := m.powdered_milk
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPowderedMilk returns the old "powdered_milk" field's value of the Coffee entity.
+// If the Coffee object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CoffeeMutation) OldPowderedMilk(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPowderedMilk is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPowderedMilk requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPowderedMilk: %w", err)
+	}
+	return oldValue.PowderedMilk, nil
+}
+
+// AddPowderedMilk adds i to the "powdered_milk" field.
+func (m *CoffeeMutation) AddPowderedMilk(i int) {
+	if m.addpowdered_milk != nil {
+		*m.addpowdered_milk += i
+	} else {
+		m.addpowdered_milk = &i
 	}
 }
 
-// RemovedChildren returns the removed IDs of the "children" edge to the Todo entity.
-func (m *TodoMutation) RemovedChildrenIDs() (ids []int) {
-	for id := range m.removedchildren {
-		ids = append(ids, id)
+// AddedPowderedMilk returns the value that was added to the "powdered_milk" field in this mutation.
+func (m *CoffeeMutation) AddedPowderedMilk() (r int, exists bool) {
+	v := m.addpowdered_milk
+	if v == nil {
+		return
 	}
-	return
+	return *v, true
 }
 
-// ChildrenIDs returns the "children" edge IDs in the mutation.
-func (m *TodoMutation) ChildrenIDs() (ids []int) {
-	for id := range m.children {
-		ids = append(ids, id)
+// ResetPowderedMilk resets all changes to the "powdered_milk" field.
+func (m *CoffeeMutation) ResetPowderedMilk() {
+	m.powdered_milk = nil
+	m.addpowdered_milk = nil
+}
+
+// SetCoffeeMate sets the "coffee_mate" field.
+func (m *CoffeeMutation) SetCoffeeMate(i int) {
+	m.coffee_mate = &i
+	m.addcoffee_mate = nil
+}
+
+// CoffeeMate returns the value of the "coffee_mate" field in the mutation.
+func (m *CoffeeMutation) CoffeeMate() (r int, exists bool) {
+	v := m.coffee_mate
+	if v == nil {
+		return
 	}
-	return
+	return *v, true
 }
 
-// ResetChildren resets all changes to the "children" edge.
-func (m *TodoMutation) ResetChildren() {
-	m.children = nil
-	m.clearedchildren = false
-	m.removedchildren = nil
-}
-
-// SetParentID sets the "parent" edge to the Todo entity by id.
-func (m *TodoMutation) SetParentID(id int) {
-	m.parent = &id
-}
-
-// ClearParent clears the "parent" edge to the Todo entity.
-func (m *TodoMutation) ClearParent() {
-	m.clearedparent = true
-}
-
-// ParentCleared reports if the "parent" edge to the Todo entity was cleared.
-func (m *TodoMutation) ParentCleared() bool {
-	return m.clearedparent
-}
-
-// ParentID returns the "parent" edge ID in the mutation.
-func (m *TodoMutation) ParentID() (id int, exists bool) {
-	if m.parent != nil {
-		return *m.parent, true
+// OldCoffeeMate returns the old "coffee_mate" field's value of the Coffee entity.
+// If the Coffee object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CoffeeMutation) OldCoffeeMate(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCoffeeMate is only allowed on UpdateOne operations")
 	}
-	return
-}
-
-// ParentIDs returns the "parent" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// ParentID instead. It exists only for internal usage by the builders.
-func (m *TodoMutation) ParentIDs() (ids []int) {
-	if id := m.parent; id != nil {
-		ids = append(ids, *id)
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCoffeeMate requires an ID field in the mutation")
 	}
-	return
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCoffeeMate: %w", err)
+	}
+	return oldValue.CoffeeMate, nil
 }
 
-// ResetParent resets all changes to the "parent" edge.
-func (m *TodoMutation) ResetParent() {
-	m.parent = nil
-	m.clearedparent = false
+// AddCoffeeMate adds i to the "coffee_mate" field.
+func (m *CoffeeMutation) AddCoffeeMate(i int) {
+	if m.addcoffee_mate != nil {
+		*m.addcoffee_mate += i
+	} else {
+		m.addcoffee_mate = &i
+	}
 }
 
-// Where appends a list predicates to the TodoMutation builder.
-func (m *TodoMutation) Where(ps ...predicate.Todo) {
+// AddedCoffeeMate returns the value that was added to the "coffee_mate" field in this mutation.
+func (m *CoffeeMutation) AddedCoffeeMate() (r int, exists bool) {
+	v := m.addcoffee_mate
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCoffeeMate resets all changes to the "coffee_mate" field.
+func (m *CoffeeMutation) ResetCoffeeMate() {
+	m.coffee_mate = nil
+	m.addcoffee_mate = nil
+}
+
+// SetMilk sets the "milk" field.
+func (m *CoffeeMutation) SetMilk(i int) {
+	m.milk = &i
+	m.addmilk = nil
+}
+
+// Milk returns the value of the "milk" field in the mutation.
+func (m *CoffeeMutation) Milk() (r int, exists bool) {
+	v := m.milk
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMilk returns the old "milk" field's value of the Coffee entity.
+// If the Coffee object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CoffeeMutation) OldMilk(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMilk is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMilk requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMilk: %w", err)
+	}
+	return oldValue.Milk, nil
+}
+
+// AddMilk adds i to the "milk" field.
+func (m *CoffeeMutation) AddMilk(i int) {
+	if m.addmilk != nil {
+		*m.addmilk += i
+	} else {
+		m.addmilk = &i
+	}
+}
+
+// AddedMilk returns the value that was added to the "milk" field in this mutation.
+func (m *CoffeeMutation) AddedMilk() (r int, exists bool) {
+	v := m.addmilk
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetMilk resets all changes to the "milk" field.
+func (m *CoffeeMutation) ResetMilk() {
+	m.milk = nil
+	m.addmilk = nil
+}
+
+// SetWater sets the "water" field.
+func (m *CoffeeMutation) SetWater(i int) {
+	m.water = &i
+	m.addwater = nil
+}
+
+// Water returns the value of the "water" field in the mutation.
+func (m *CoffeeMutation) Water() (r int, exists bool) {
+	v := m.water
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWater returns the old "water" field's value of the Coffee entity.
+// If the Coffee object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CoffeeMutation) OldWater(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWater is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWater requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWater: %w", err)
+	}
+	return oldValue.Water, nil
+}
+
+// AddWater adds i to the "water" field.
+func (m *CoffeeMutation) AddWater(i int) {
+	if m.addwater != nil {
+		*m.addwater += i
+	} else {
+		m.addwater = &i
+	}
+}
+
+// AddedWater returns the value that was added to the "water" field in this mutation.
+func (m *CoffeeMutation) AddedWater() (r int, exists bool) {
+	v := m.addwater
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetWater resets all changes to the "water" field.
+func (m *CoffeeMutation) ResetWater() {
+	m.water = nil
+	m.addwater = nil
+}
+
+// SetRating sets the "rating" field.
+func (m *CoffeeMutation) SetRating(f float64) {
+	m.rating = &f
+	m.addrating = nil
+}
+
+// Rating returns the value of the "rating" field in the mutation.
+func (m *CoffeeMutation) Rating() (r float64, exists bool) {
+	v := m.rating
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRating returns the old "rating" field's value of the Coffee entity.
+// If the Coffee object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CoffeeMutation) OldRating(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRating is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRating requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRating: %w", err)
+	}
+	return oldValue.Rating, nil
+}
+
+// AddRating adds f to the "rating" field.
+func (m *CoffeeMutation) AddRating(f float64) {
+	if m.addrating != nil {
+		*m.addrating += f
+	} else {
+		m.addrating = &f
+	}
+}
+
+// AddedRating returns the value that was added to the "rating" field in this mutation.
+func (m *CoffeeMutation) AddedRating() (r float64, exists bool) {
+	v := m.addrating
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetRating resets all changes to the "rating" field.
+func (m *CoffeeMutation) ResetRating() {
+	m.rating = nil
+	m.addrating = nil
+}
+
+// Where appends a list predicates to the CoffeeMutation builder.
+func (m *CoffeeMutation) Where(ps ...predicate.Coffee) {
 	m.predicates = append(m.predicates, ps...)
 }
 
-// WhereP appends storage-level predicates to the TodoMutation builder. Using this method,
+// WhereP appends storage-level predicates to the CoffeeMutation builder. Using this method,
 // users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *TodoMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.Todo, len(ps))
+func (m *CoffeeMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Coffee, len(ps))
 	for i := range ps {
 		p[i] = ps[i]
 	}
@@ -420,36 +558,45 @@ func (m *TodoMutation) WhereP(ps ...func(*sql.Selector)) {
 }
 
 // Op returns the operation name.
-func (m *TodoMutation) Op() Op {
+func (m *CoffeeMutation) Op() Op {
 	return m.op
 }
 
 // SetOp allows setting the mutation operation.
-func (m *TodoMutation) SetOp(op Op) {
+func (m *CoffeeMutation) SetOp(op Op) {
 	m.op = op
 }
 
-// Type returns the node type of this mutation (Todo).
-func (m *TodoMutation) Type() string {
+// Type returns the node type of this mutation (Coffee).
+func (m *CoffeeMutation) Type() string {
 	return m.typ
 }
 
 // Fields returns all fields that were changed during this mutation. Note that in
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
-func (m *TodoMutation) Fields() []string {
-	fields := make([]string, 0, 4)
-	if m.text != nil {
-		fields = append(fields, todo.FieldText)
+func (m *CoffeeMutation) Fields() []string {
+	fields := make([]string, 0, 7)
+	if m.sugar != nil {
+		fields = append(fields, coffee.FieldSugar)
 	}
-	if m.created_at != nil {
-		fields = append(fields, todo.FieldCreatedAt)
+	if m.coffee != nil {
+		fields = append(fields, coffee.FieldCoffee)
 	}
-	if m.status != nil {
-		fields = append(fields, todo.FieldStatus)
+	if m.powdered_milk != nil {
+		fields = append(fields, coffee.FieldPowderedMilk)
 	}
-	if m.priority != nil {
-		fields = append(fields, todo.FieldPriority)
+	if m.coffee_mate != nil {
+		fields = append(fields, coffee.FieldCoffeeMate)
+	}
+	if m.milk != nil {
+		fields = append(fields, coffee.FieldMilk)
+	}
+	if m.water != nil {
+		fields = append(fields, coffee.FieldWater)
+	}
+	if m.rating != nil {
+		fields = append(fields, coffee.FieldRating)
 	}
 	return fields
 }
@@ -457,16 +604,22 @@ func (m *TodoMutation) Fields() []string {
 // Field returns the value of a field with the given name. The second boolean
 // return value indicates that this field was not set, or was not defined in the
 // schema.
-func (m *TodoMutation) Field(name string) (ent.Value, bool) {
+func (m *CoffeeMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case todo.FieldText:
-		return m.Text()
-	case todo.FieldCreatedAt:
-		return m.CreatedAt()
-	case todo.FieldStatus:
-		return m.Status()
-	case todo.FieldPriority:
-		return m.Priority()
+	case coffee.FieldSugar:
+		return m.Sugar()
+	case coffee.FieldCoffee:
+		return m.Coffee()
+	case coffee.FieldPowderedMilk:
+		return m.PowderedMilk()
+	case coffee.FieldCoffeeMate:
+		return m.CoffeeMate()
+	case coffee.FieldMilk:
+		return m.Milk()
+	case coffee.FieldWater:
+		return m.Water()
+	case coffee.FieldRating:
+		return m.Rating()
 	}
 	return nil, false
 }
@@ -474,63 +627,108 @@ func (m *TodoMutation) Field(name string) (ent.Value, bool) {
 // OldField returns the old value of the field from the database. An error is
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
-func (m *TodoMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+func (m *CoffeeMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case todo.FieldText:
-		return m.OldText(ctx)
-	case todo.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case todo.FieldStatus:
-		return m.OldStatus(ctx)
-	case todo.FieldPriority:
-		return m.OldPriority(ctx)
+	case coffee.FieldSugar:
+		return m.OldSugar(ctx)
+	case coffee.FieldCoffee:
+		return m.OldCoffee(ctx)
+	case coffee.FieldPowderedMilk:
+		return m.OldPowderedMilk(ctx)
+	case coffee.FieldCoffeeMate:
+		return m.OldCoffeeMate(ctx)
+	case coffee.FieldMilk:
+		return m.OldMilk(ctx)
+	case coffee.FieldWater:
+		return m.OldWater(ctx)
+	case coffee.FieldRating:
+		return m.OldRating(ctx)
 	}
-	return nil, fmt.Errorf("unknown Todo field %s", name)
+	return nil, fmt.Errorf("unknown Coffee field %s", name)
 }
 
 // SetField sets the value of a field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *TodoMutation) SetField(name string, value ent.Value) error {
+func (m *CoffeeMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case todo.FieldText:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetText(v)
-		return nil
-	case todo.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case todo.FieldStatus:
-		v, ok := value.(todo.Status)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetStatus(v)
-		return nil
-	case todo.FieldPriority:
+	case coffee.FieldSugar:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetPriority(v)
+		m.SetSugar(v)
+		return nil
+	case coffee.FieldCoffee:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCoffee(v)
+		return nil
+	case coffee.FieldPowderedMilk:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPowderedMilk(v)
+		return nil
+	case coffee.FieldCoffeeMate:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCoffeeMate(v)
+		return nil
+	case coffee.FieldMilk:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMilk(v)
+		return nil
+	case coffee.FieldWater:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWater(v)
+		return nil
+	case coffee.FieldRating:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRating(v)
 		return nil
 	}
-	return fmt.Errorf("unknown Todo field %s", name)
+	return fmt.Errorf("unknown Coffee field %s", name)
 }
 
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
-func (m *TodoMutation) AddedFields() []string {
+func (m *CoffeeMutation) AddedFields() []string {
 	var fields []string
-	if m.addpriority != nil {
-		fields = append(fields, todo.FieldPriority)
+	if m.addsugar != nil {
+		fields = append(fields, coffee.FieldSugar)
+	}
+	if m.addcoffee != nil {
+		fields = append(fields, coffee.FieldCoffee)
+	}
+	if m.addpowdered_milk != nil {
+		fields = append(fields, coffee.FieldPowderedMilk)
+	}
+	if m.addcoffee_mate != nil {
+		fields = append(fields, coffee.FieldCoffeeMate)
+	}
+	if m.addmilk != nil {
+		fields = append(fields, coffee.FieldMilk)
+	}
+	if m.addwater != nil {
+		fields = append(fields, coffee.FieldWater)
+	}
+	if m.addrating != nil {
+		fields = append(fields, coffee.FieldRating)
 	}
 	return fields
 }
@@ -538,10 +736,22 @@ func (m *TodoMutation) AddedFields() []string {
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
-func (m *TodoMutation) AddedField(name string) (ent.Value, bool) {
+func (m *CoffeeMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
-	case todo.FieldPriority:
-		return m.AddedPriority()
+	case coffee.FieldSugar:
+		return m.AddedSugar()
+	case coffee.FieldCoffee:
+		return m.AddedCoffee()
+	case coffee.FieldPowderedMilk:
+		return m.AddedPowderedMilk()
+	case coffee.FieldCoffeeMate:
+		return m.AddedCoffeeMate()
+	case coffee.FieldMilk:
+		return m.AddedMilk()
+	case coffee.FieldWater:
+		return m.AddedWater()
+	case coffee.FieldRating:
+		return m.AddedRating()
 	}
 	return nil, false
 }
@@ -549,156 +759,153 @@ func (m *TodoMutation) AddedField(name string) (ent.Value, bool) {
 // AddField adds the value to the field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *TodoMutation) AddField(name string, value ent.Value) error {
+func (m *CoffeeMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case todo.FieldPriority:
+	case coffee.FieldSugar:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.AddPriority(v)
+		m.AddSugar(v)
+		return nil
+	case coffee.FieldCoffee:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCoffee(v)
+		return nil
+	case coffee.FieldPowderedMilk:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddPowderedMilk(v)
+		return nil
+	case coffee.FieldCoffeeMate:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCoffeeMate(v)
+		return nil
+	case coffee.FieldMilk:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddMilk(v)
+		return nil
+	case coffee.FieldWater:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWater(v)
+		return nil
+	case coffee.FieldRating:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddRating(v)
 		return nil
 	}
-	return fmt.Errorf("unknown Todo numeric field %s", name)
+	return fmt.Errorf("unknown Coffee numeric field %s", name)
 }
 
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
-func (m *TodoMutation) ClearedFields() []string {
+func (m *CoffeeMutation) ClearedFields() []string {
 	return nil
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
 // cleared in this mutation.
-func (m *TodoMutation) FieldCleared(name string) bool {
+func (m *CoffeeMutation) FieldCleared(name string) bool {
 	_, ok := m.clearedFields[name]
 	return ok
 }
 
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
-func (m *TodoMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown Todo nullable field %s", name)
+func (m *CoffeeMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Coffee nullable field %s", name)
 }
 
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
-func (m *TodoMutation) ResetField(name string) error {
+func (m *CoffeeMutation) ResetField(name string) error {
 	switch name {
-	case todo.FieldText:
-		m.ResetText()
+	case coffee.FieldSugar:
+		m.ResetSugar()
 		return nil
-	case todo.FieldCreatedAt:
-		m.ResetCreatedAt()
+	case coffee.FieldCoffee:
+		m.ResetCoffee()
 		return nil
-	case todo.FieldStatus:
-		m.ResetStatus()
+	case coffee.FieldPowderedMilk:
+		m.ResetPowderedMilk()
 		return nil
-	case todo.FieldPriority:
-		m.ResetPriority()
+	case coffee.FieldCoffeeMate:
+		m.ResetCoffeeMate()
+		return nil
+	case coffee.FieldMilk:
+		m.ResetMilk()
+		return nil
+	case coffee.FieldWater:
+		m.ResetWater()
+		return nil
+	case coffee.FieldRating:
+		m.ResetRating()
 		return nil
 	}
-	return fmt.Errorf("unknown Todo field %s", name)
+	return fmt.Errorf("unknown Coffee field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
-func (m *TodoMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.children != nil {
-		edges = append(edges, todo.EdgeChildren)
-	}
-	if m.parent != nil {
-		edges = append(edges, todo.EdgeParent)
-	}
+func (m *CoffeeMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
-func (m *TodoMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case todo.EdgeChildren:
-		ids := make([]ent.Value, 0, len(m.children))
-		for id := range m.children {
-			ids = append(ids, id)
-		}
-		return ids
-	case todo.EdgeParent:
-		if id := m.parent; id != nil {
-			return []ent.Value{*id}
-		}
-	}
+func (m *CoffeeMutation) AddedIDs(name string) []ent.Value {
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
-func (m *TodoMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.removedchildren != nil {
-		edges = append(edges, todo.EdgeChildren)
-	}
+func (m *CoffeeMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
-func (m *TodoMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case todo.EdgeChildren:
-		ids := make([]ent.Value, 0, len(m.removedchildren))
-		for id := range m.removedchildren {
-			ids = append(ids, id)
-		}
-		return ids
-	}
+func (m *CoffeeMutation) RemovedIDs(name string) []ent.Value {
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *TodoMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.clearedchildren {
-		edges = append(edges, todo.EdgeChildren)
-	}
-	if m.clearedparent {
-		edges = append(edges, todo.EdgeParent)
-	}
+func (m *CoffeeMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
-func (m *TodoMutation) EdgeCleared(name string) bool {
-	switch name {
-	case todo.EdgeChildren:
-		return m.clearedchildren
-	case todo.EdgeParent:
-		return m.clearedparent
-	}
+func (m *CoffeeMutation) EdgeCleared(name string) bool {
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
-func (m *TodoMutation) ClearEdge(name string) error {
-	switch name {
-	case todo.EdgeParent:
-		m.ClearParent()
-		return nil
-	}
-	return fmt.Errorf("unknown Todo unique edge %s", name)
+func (m *CoffeeMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown Coffee unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
-func (m *TodoMutation) ResetEdge(name string) error {
-	switch name {
-	case todo.EdgeChildren:
-		m.ResetChildren()
-		return nil
-	case todo.EdgeParent:
-		m.ResetParent()
-		return nil
-	}
-	return fmt.Errorf("unknown Todo edge %s", name)
+func (m *CoffeeMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown Coffee edge %s", name)
 }

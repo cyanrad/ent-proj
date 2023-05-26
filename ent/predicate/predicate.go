@@ -6,5 +6,5 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
-// Todo is the predicate function for todo builders.
-type Todo func(*sql.Selector)
+// Coffee is the predicate function for coffee builders.
+type Coffee func(*sql.Selector)

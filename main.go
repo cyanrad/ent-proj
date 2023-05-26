@@ -30,7 +30,7 @@ func main() {
 	// Configure the server and start listening on :8081.
 	srv := handler.NewDefaultServer(resolver.NewSchema(client))
 	http.Handle("/",
-		playground.Handler("Todo", "/query"),
+		playground.Handler("Coffee", "/query"),
 	)
 	http.Handle("/query", srv)
 	log.Println("listening on :3000")

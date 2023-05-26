@@ -8,35 +8,28 @@ import (
 )
 
 var (
-	// TodosColumns holds the columns for the "todos" table.
-	TodosColumns = []*schema.Column{
+	// CoffeesColumns holds the columns for the "coffees" table.
+	CoffeesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "text", Type: field.TypeString, Size: 2147483647},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"IN_PROGRESS", "COMPLETED"}, Default: "IN_PROGRESS"},
-		{Name: "priority", Type: field.TypeInt, Default: 0},
-		{Name: "todo_parent", Type: field.TypeInt, Nullable: true},
+		{Name: "sugar", Type: field.TypeInt},
+		{Name: "coffee", Type: field.TypeInt},
+		{Name: "powdered_milk", Type: field.TypeInt},
+		{Name: "coffee_mate", Type: field.TypeInt},
+		{Name: "milk", Type: field.TypeInt},
+		{Name: "water", Type: field.TypeInt},
+		{Name: "rating", Type: field.TypeFloat64},
 	}
-	// TodosTable holds the schema information for the "todos" table.
-	TodosTable = &schema.Table{
-		Name:       "todos",
-		Columns:    TodosColumns,
-		PrimaryKey: []*schema.Column{TodosColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "todos_todos_parent",
-				Columns:    []*schema.Column{TodosColumns[5]},
-				RefColumns: []*schema.Column{TodosColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
+	// CoffeesTable holds the schema information for the "coffees" table.
+	CoffeesTable = &schema.Table{
+		Name:       "coffees",
+		Columns:    CoffeesColumns,
+		PrimaryKey: []*schema.Column{CoffeesColumns[0]},
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
-		TodosTable,
+		CoffeesTable,
 	}
 )
 
 func init() {
-	TodosTable.ForeignKeys[0].RefTable = TodosTable
 }
