@@ -1,5 +1,6 @@
 # config wiki: https://gqlgen.com/config/
 
+# graphql schemas files location
 schema:
   - ./gql/*.graphql
 
@@ -8,18 +9,22 @@ resolver:
   layout: follow-schema
   dir: ./resolver
 
+# generated server code
 exec:
   layout: follow-schema
   dir: resolver/generated
   package: generated
-# gqlgen will search for any type names in the schema in these go packages
-# if they match it will use them, otherwise it will generate them.
 
-# autobind tells gqngen to search for any type names in the GraphQL schema in the
+# autobind tells gqlgen to search for any type names in the GraphQL schema in the
 # provided package. If they match it will use them, otherwise it will generate new.
 autobind:
   - main/ent
-  - main/ent/todo
+  # e.g.
+  # - main/ent/todo
+
+# custom generated graphql models/inputs/types
+model:
+  filename: resolver/models/models_gen.go
 
 # This section declares type mapping between the GraphQL and Go type systems.
 models:

@@ -5,5 +5,6 @@ generate-graphql:
 	go run -mod=mod ./ent/entc.go
 	go run -mod=mod github.com/99designs/gqlgen
 
-run:
-	go run .
+generate:
+	make generate-db
+	make generate-graphql
